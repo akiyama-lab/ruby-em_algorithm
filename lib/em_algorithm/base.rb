@@ -36,8 +36,8 @@ module EMAlgorithm
     end
 
     class Likelihood
-      THRESHOLD = 0.0001
-      #THRESHOLD = 0.01
+      #THRESHOLD = 0.0001
+      THRESHOLD = 0.01
 
       attr_accessor :history
 

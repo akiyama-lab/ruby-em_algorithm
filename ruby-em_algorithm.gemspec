@@ -2,7 +2,6 @@
 require File.expand_path('../lib/ruby-em_algorithm/version', __FILE__)
 
 Gem::Specification.new do |gem|
-  gem.add_development_dependency 'rack-test'
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec', '~> 2.8'
 

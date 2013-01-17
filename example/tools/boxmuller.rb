@@ -6,7 +6,7 @@
 require 'yaml'
 
 include Math
-def boxmuller(n,mu,sigma2)
+def boxmuller(n,mu,sigma)
   j=0
   data_array = []
   while j < n
@@ -14,8 +14,8 @@ def boxmuller(n,mu,sigma2)
     b=rand()
     r1=sqrt(-2*Math.log(a.to_f)).to_f*sin(2*Math::PI*b.to_f).to_f
     r2=sqrt(-2*Math.log(a.to_f)).to_f*cos(2*Math::PI*b.to_f).to_f
-    r3=r1.to_f*Math.sqrt(sigma2).to_f+mu.to_f
-    r4=r2.to_f*Math.sqrt(sigma2).to_f+mu.to_f
+    r3=r1.to_f*sigma.to_f+mu.to_f
+    r4=r2.to_f*sigma.to_f+mu.to_f
     data_array << r3
     data_array << r4
     j=j+2
@@ -23,6 +23,6 @@ def boxmuller(n,mu,sigma2)
   data_array
 end
 
-data_array = boxmuller(7000, 5, 16.0)
-data_array = data_array + boxmuller(3000, -5, 1.0)
+data_array = boxmuller(7000, 5, 4.0)
+#data_array = data_array + boxmuller(3000, -5, 1.0)
 puts data_array.to_yaml

@@ -24,5 +24,5 @@ def boxmuller(n,mu,sigma)
 end
 
 data_array = boxmuller(7000, 5, 4.0)
-#data_array = data_array + boxmuller(3000, -5, 1.0)
+data_array = data_array + boxmuller(3000, -5, 1.0)
 puts data_array.to_yaml

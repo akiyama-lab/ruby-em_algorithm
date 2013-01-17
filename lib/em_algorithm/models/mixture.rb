@@ -24,7 +24,7 @@ module EMAlgorithm
     end
 
     def chi_square(x)
-      estimated = pdf_org(x)
+      estimated = pdf(x)
       observation_weight = @models.first.observation_weight(x)
       (observation_weight - estimated) ** 2.0 / estimated
     end
@@ -76,7 +76,7 @@ module EMAlgorithm
       posterior_data_array = Array.new(data_array.size, 0.0)
       @models.each_with_index do |model, mi|
         data_array.each_with_index do |x, di|
-          posterior_data_array[di] += @weights[mi] * pdf(x)
+          posterior_data_array[di] += @weights[mi] * model.method("pdf#{@method_postfix}").call(x)
         end
       end
       posterior_data_array
@@ -85,7 +85,7 @@ module EMAlgorithm
     def update_temp_weights!(data_array, posterior_data_array)
       @models.each_with_index do |model, mi|
         data_array.each_with_index do |x, di|
-          temp_weight_per_datum = @weights[mi] * pdf(x) / posterior_data_array[di]
+          temp_weight_per_datum = @weights[mi] * model.method("pdf#{@method_postfix}").call(x) / posterior_data_array[di]
           temp_weight_per_datum = 0.0 if temp_weight_per_datum.nan?
           @temp_weight_per_datum[mi] <<  temp_weight_per_datum
         end

@@ -20,12 +20,13 @@ data_array = YAML.load_file(ARGV[0]).map {|v| GSL::Vector[v]}
 #  :weights => [1.0]
 #)
 model = Mixture.new(
-  :models => [MdGaussian.new(Vector[-2.0, -2.0], Matrix[[9.0, 0.0], [0.0, 9.0]], 1.0), MdGaussian.new(Vector[2.0, 2.0], Matrix[[9.0, 0.0], [0.0, 9.0]], 1.0)],
+  :models => [MdGaussian.new(Vector[-3.0, -4.0], Matrix[[9.0, 0.0], [0.0, 9.0]], 1.0), MdGaussian.new(Vector[2.0, 2.0], Matrix[[9.0, 0.0], [0.0, 9.0]], 1.0)],
   :weights => [0.5, 0.5]
 )
 
 em = EMAlgorithm::Base.new(:model => model, :data_array => data_array,
                            :convergence_check => "ChiSquare",
+                           #:convergence_check => "Likelihood",
                            :use_observation_weight => true)
 em.run!
 em.model.to_gnuplot

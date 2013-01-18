@@ -23,8 +23,8 @@ def bivariate_gaussian(number, mu_x, mu_y, sigma_x, sigma_y, rho, seed)
     return array_xy
   end
 
-  h = Histogram2d.alloc(30, [-6, 6], 30, [-6, 6])
-  #h = Histogram2d.alloc(48, [-6, 6], 48, [-6, 6])
+  #h = Histogram2d.alloc(30, [-6, 6], 30, [-6, 6])
+  h = Histogram2d.alloc(256, [-6, 6], 256, [-6, 6])
   h.fill(v_x, v_y)
   data_array = []
   (0..(h.nx-1)).each do |x|
@@ -40,8 +40,10 @@ def bivariate_gaussian(number, mu_x, mu_y, sigma_x, sigma_y, rho, seed)
 end
 
 #data_array = bivariate_gaussian(1200, 1.0, 1.0, 1.0, 1.0, 0, 1)
-data_array = bivariate_gaussian(6000, 1, 1, 1, 1, 0, 1)
-data_array += bivariate_gaussian(3000, -1, -2, 1, 1, 0, 1)
+data_array = bivariate_gaussian(24000, 1, 1, 1, 1, 0, 1)
+data_array += bivariate_gaussian(12000, -1, -2, 1, 1, 0, 1)
+#data_array = bivariate_gaussian(6000, 1, 1, 1, 1, 0, 1)
+#data_array += bivariate_gaussian(3000, -1, -2, 1, 1, 0, 1)
 if ARGV[0] == "without_weight"
   puts data_array.to_yaml
   exit(0)

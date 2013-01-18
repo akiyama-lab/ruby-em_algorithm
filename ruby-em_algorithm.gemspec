@@ -4,6 +4,7 @@ require File.expand_path('../lib/ruby-em_algorithm/version', __FILE__)
 Gem::Specification.new do |gem|
   gem.add_development_dependency 'rake'
   gem.add_development_dependency 'rspec', '~> 2.8'
+  gem.add_development_dependency 'gsl'
 
   gem.authors       = ["Jun Sugahara", "Toyokazu Akiyama"]
   gem.email         = ["toyokazu@gmail.com"]
@@ -16,6 +17,5 @@ Gem::Specification.new do |gem|
   gem.name          = "ruby-em_algorithm"
   gem.require_paths = ["lib"]
   gem.version       = EMAlgorithm::VERSION
-
 
 end

@@ -1,8 +1,8 @@
 module EMAlgorithm
   class MdGaussian < Model
-    attr_accessor :mu, :sigma2, :dim
+    attr_accessor :mu, :sigma2
 
-    def initialize(mu = GSL::Vector[0.0, 0.0], sigma2 = GSL::Matrix[[1.0, 0.0], [0.0, 1.0]], const = nil)
+    def initialize(mu = GSL::Vector[0.0, 0.0], sigma2 = GSL::Matrix[[1.0, 0.0], [0.0, 1.0]], c = nil)
       # check mu
       if mu.class != GSL::Vector
         raise ArgumentError, "mu should be GSL::Vector."
@@ -17,46 +17,57 @@ module EMAlgorithm
       @sigma2 = sigma2
       @sqrt_sigma2_det = sqrt(@sigma2.det)
       @sigma2_invert = @sigma2.invert
-      @const = const
+      @const = c
       @update_const = (!@const.nil?)
       @method_postfix = ""
+    end
+
+    def remove_weight(x_with_weight)
+      x_with_weight[0..(@mu.size-1)]
     end
 
     def observation_weight(x_with_weight)
       x_with_weight[@mu.size]
     end
 
-    def init_observation_weight(method_postfix, data_array)
-      @observation_weight = data_array.inject(0.0) do |sum, datum|
-        sum + datum[@mu.size]
-      end
+    def const
+      @const.nil? ? 1.0 : @const
+    end
+
+    def init_method_postfix(method_postfix)
       @method_postfix = method_postfix
     end
 
     def probability_density_function(x_with_weight)
-      x = x_with_weight[0..(@mu.size-1)]
+      x = remove_weight(x_with_weight)
       exp(-((x-@mu) * @sigma2_invert * (x-@mu).trans)/2.0)/((sqrt(2.0*PI)**@mu.size)*@sqrt_sigma2_det)
     end
 
     def probability_density_function_with_observation_weight(x_with_weight)
-      observation_weight = x_with_weight[@mu.size]
-      observation_weight * probability_density_function(x_with_weight)
+      observation_weight(x_with_weight) * probability_density_function(x_with_weight)
     end
 
-    def revise_weight(temp_weight)
-      return temp_weight if @observation_weight.nil?
-      temp_weight
-      #temp_weight + @observation_weight
+    # TODO
+    # mstep may not require observation weight revision
+    def revise_weight(data_array, temp_weight, temp_weight_per_datum)
+      return temp_weight if @method_postfix.empty?
+      return @revised_weight if !@revised_weight.nil?
+      @revised_weight = 0.0
+      temp_weight_per_datum.each_with_index do |w, di|
+        @revised_weight += w * observation_weight(data_array[di])
+      end
+      @revised_weight
     end
 
     def average_unit(data_array, di)
-      data_array[di][0..(@mu.size-1)]
+      remove_weight(data_array[di])
     end
 
+    # TODO
+    # mstep may not require observation weight revision
     def average_unit_with_observation_weight(data_array, di)
-      #observation_weight = data_array[di][@mu.size]
-      average_unit(data_array, di)
-      #observation_weight * average_unit(data_array, di)
+      #average_unit(data_array, di)
+      observation_weight(data_array[di]) * average_unit(data_array, di)
     end
 
     alias :average_unit_ow :average_unit_with_observation_weight
@@ -65,17 +76,18 @@ module EMAlgorithm
       data_sum = (0..(data_array.size-1)).inject(GSL::Vector.alloc(@mu.size).set_zero) do |sum, di|
         sum + temp_weight_per_datum[di] * method("average_unit#{@method_postfix}").call(data_array, di)
       end
-      @mu = data_sum / revise_weight(temp_weight)
+      @mu = data_sum / revise_weight(data_array, temp_weight, temp_weight_per_datum)
     end
 
     def sigma2_unit(data_array, di)
-      (data_array[di][0..(@mu.size-1)] - @mu).trans * (data_array[di][0..(@mu.size-1)] - @mu)
+      (remove_weight(data_array[di]) - @mu).trans * (remove_weight(data_array[di]) - @mu)
     end
 
+    # TODO
+    # mstep may not require observation weight revision
     def sigma2_unit_with_observation_weight(data_array, di)
-      #observation_weight = data_array[di][@mu.size]
-      sigma2_unit(data_array, di)
-      #observation_weight * sigma2_unit(data_array, di)
+      #sigma2_unit(data_array, di)
+      observation_weight(data_array[di]) * sigma2_unit(data_array, di)
     end
 
     alias :sigma2_unit_ow :sigma2_unit_with_observation_weight
@@ -84,22 +96,25 @@ module EMAlgorithm
       data_sum = (0..(data_array.size-1)).inject(0.0) do |sum, di|
         sum + temp_weight_per_datum[di] * method("sigma2_unit#{@method_postfix}").call(data_array, di)
       end
-      $stderr.puts "(data_sum / revise_weight(temp_weight)) ="
-      $stderr.puts (data_sum / revise_weight(temp_weight)).inspect
-      @sigma2 = (data_sum / revise_weight(temp_weight))
+      $stderr.puts "(data_sum / revise_weight(data_array, temp_weight, temp_weight_per_datum)) ="
+      $stderr.puts (data_sum / revise_weight(data_array, temp_weight, temp_weight_per_datum)).inspect
+      @sigma2 = (data_sum / revise_weight(data_array, temp_weight, temp_weight_per_datum))
       @sqrt_sigma2_det = sqrt(@sigma2.det)
       @sigma2_invert = @sigma2.invert
     end
 
+    # TODO
+    # update_const! may not be required
     def update_const!(data_array, temp_weight, temp_weight_per_datum)
-      data_sum = (0..(data_array.size-1)).inject(0.0) do |sum, di|
-        observation_weight = data_array[di][@mu.size]
-        sum + temp_weight_per_datum[di] * observation_weight
-      end
-      @const = (data_sum / revise_weight(temp_weight))
+      #data_sum = (0..(data_array.size-1)).inject(0.0) do |sum, di|
+      #  sum + temp_weight_per_datum[di] * observation_weight(data_array[di])
+      #end
+      #@const = (data_sum / revise_weight(data_array, temp_weight, temp_weight_per_datum))
+      @const = observation_weight(data_array.max {|a,b| observation_weight(a) <=> observation_weight(b)}) / pdf(@mu)
     end
 
     def update_parameters!(data_array, temp_weight, temp_weight_per_datum)
+      @revised_weight = nil
       update_average!(data_array, temp_weight, temp_weight_per_datum)
       update_sigma2!(data_array, temp_weight, temp_weight_per_datum)
       if @update_const

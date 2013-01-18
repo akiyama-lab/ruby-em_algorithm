@@ -24,6 +24,7 @@ def bivariate_gaussian(number, mu_x, mu_y, sigma_x, sigma_y, rho, seed)
   end
 
   h = Histogram2d.alloc(30, [-6, 6], 30, [-6, 6])
+  #h = Histogram2d.alloc(48, [-6, 6], 48, [-6, 6])
   h.fill(v_x, v_y)
   data_array = []
   (0..(h.nx-1)).each do |x|
@@ -48,8 +49,10 @@ end
 sum = data_array.inject(0.0) do |sum, datum|
   sum + datum[2]
 end
+#max = data_array.max {|a,b| a[2] <=> b[2]}
 data_array = data_array.map do |datum|
   [datum[0], datum[1], datum[2] / sum]
+  #[datum[0], datum[1], datum[2] * 60.0 / max[2]]
 end
 if ARGV[0] == "gnuplot"
   #exit(0)

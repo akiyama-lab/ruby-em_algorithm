@@ -34,7 +34,7 @@ module EMAlgorithm
       @data_array = opts[:data_array]
       @conv_check = (eval opts[:convergence_check]).new(@data_array, @model)
       if opts[:use_observation_weight]
-        @model.init_observation_weight("_ow", data_array)
+        @model.init_method_postfix("_ow")
       end
     end
 

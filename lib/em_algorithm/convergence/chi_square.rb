@@ -1,7 +1,7 @@
 module EMAlgorithm
   class ChiSquare < CheckMethod
     STAT_THRESHOLD = 0.05
-    CONV_THRESHOLD = 0.001
+    CONV_THRESHOLD = 0.01
 
     attr_accessor :history
 

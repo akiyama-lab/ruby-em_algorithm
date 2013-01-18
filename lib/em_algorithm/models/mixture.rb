@@ -23,17 +23,20 @@ module EMAlgorithm
       @method_postfix = ""
     end
 
+    # TODO
+    # const may not be required
     def chi_square(x)
-      estimated = pdf(x)
+      estimated = 0.0
+      @models.each_with_index do |model, mi|
+        estimated += model.pdf(x) * @weights[mi]
+        #estimated += model.const * model.pdf(x) * @weights[mi]
+      end
       observation_weight = @models.first.observation_weight(x)
       (observation_weight - estimated) ** 2.0 / estimated
     end
 
-    def init_observation_weight(method_postfix, data_array)
+    def init_method_postfix(method_postfix)
       @method_postfix = method_postfix
-      @models.each do |model|
-        model.init_observation_weight(method_postfix, data_array)
-      end
     end
 
     def argument_error

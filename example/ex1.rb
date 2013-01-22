@@ -17,4 +17,4 @@ model = Mixture.new(
 
 em = EMAlgorithm::Base.new(:model => model, :data_array => data_array)
 em.run!
-em.model.to_gnuplot
+puts em.model.to_gnuplot

@@ -1,6 +1,6 @@
 module EMAlgorithm
   class Mixture < Model
-    attr_accessor :models, :weights, :method_postfix
+    attr_accessor :models, :weights
 
     def initialize(options)
       opts = {
@@ -20,23 +20,6 @@ module EMAlgorithm
       end
       @temp_weights = Array.new(@models.size)
       @temp_weight_per_datum = Array.new(@models.size).map { Array.new }
-      @method_postfix = ""
-    end
-
-    # TODO
-    # const may not be required
-    def chi_square(x)
-      estimated = 0.0
-      @models.each_with_index do |model, mi|
-        estimated += model.pdf(x) * @weights[mi]
-        #estimated += model.const * model.pdf(x) * @weights[mi]
-      end
-      observation_weight = @models.first.observation_weight(x)
-      (observation_weight - estimated) ** 2.0 / estimated
-    end
-
-    def init_method_postfix(method_postfix)
-      @method_postfix = method_postfix
     end
 
     def argument_error
@@ -63,14 +46,6 @@ module EMAlgorithm
       pdf
     end
 
-    def probability_density_function_with_observation_weight(x)
-      pdf = 0.0
-      @models.each_with_index do |model, mi|
-        pdf += model.pdf_ow(x) * @weights[mi]
-      end
-      pdf
-    end
-
     def clear_temp_weight_per_datum!
       @temp_weight_per_datum.each {|w| w.clear}
     end
@@ -79,7 +54,7 @@ module EMAlgorithm
       posterior_data_array = Array.new(data_array.size, 0.0)
       @models.each_with_index do |model, mi|
         data_array.each_with_index do |x, di|
-          posterior_data_array[di] += @weights[mi] * model.method("pdf#{@method_postfix}").call(x)
+          posterior_data_array[di] += @weights[mi] * model.pdf(x)
         end
       end
       posterior_data_array
@@ -88,7 +63,7 @@ module EMAlgorithm
     def update_temp_weights!(data_array, posterior_data_array)
       @models.each_with_index do |model, mi|
         data_array.each_with_index do |x, di|
-          temp_weight_per_datum = @weights[mi] * model.method("pdf#{@method_postfix}").call(x) / posterior_data_array[di]
+          temp_weight_per_datum = @weights[mi] * model.pdf(x) / posterior_data_array[di]
           temp_weight_per_datum = 0.0 if temp_weight_per_datum.nan?
           @temp_weight_per_datum[mi] <<  temp_weight_per_datum
         end
@@ -109,27 +84,39 @@ module EMAlgorithm
       update_weights!(data_array)
     end
 
-    def to_gnuplot
+    # output types
+    # :full (default)
+    # :separate_only
+    # :mixture_only
+    def to_gnuplot(type = :full)
       # output each model (currently assume Gaussian)
       output = []
       @models.each_with_index do |model, mi|
-        output << "#{round(@weights[mi],6)} * #{model.to_gnuplot_with_title(@weights[mi])}"
+        output << "#{@weights[mi].round(DIGIT)} * #{model.to_gnuplot_with_title(@weights[mi])}"
       end
-      puts output.join(", ")
-      puts ""
+      separate = output.join(", ")
       # output mixture model (currently assume Gaussian Mixture model)
       output = []
       @models.each_with_index do |model, mi|
-        output << "#{round(@weights[mi],6)} * #{model.to_gnuplot}"
+        output << "#{@weights[mi].round(DIGIT)} * #{model.to_gnuplot}"
       end
-      puts output.join(" + ")
+      mixture = output.join(" + ")
+      case type
+      when :separate_only
+        return separate
+      when :mixture_only
+        return mixture
+      end
+      "#{separate}, #{mixture}"
     end
 
     def debug_output
-      $stderr.puts "@weights=#{@weights.inspect}"
-      $stderr.puts "@temp_weights=#{@temp_weights.inspect}"
-      $stderr.puts "@models"
-      $stderr.puts @models.inspect
+      <<-DEBUG_OUT
+  @weights=#{@weights.inspect}
+  @temp_weights=#{@temp_weights.inspect}
+  @models
+   #{@models.inspect}
+      DEBUG_OUT
     end
   end
 end

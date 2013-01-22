@@ -24,40 +24,41 @@ def bivariate_gaussian(number, mu_x, mu_y, sigma_x, sigma_y, rho, seed)
   end
 
   #h = Histogram2d.alloc(30, [-6, 6], 30, [-6, 6])
-  h = Histogram2d.alloc(256, [-6, 6], 256, [-6, 6])
+  h = Histogram2d.alloc(100, [-10, 10], 100, [-10, 10])
+  #h = Histogram2d.alloc(256, [-6, 6], 256, [-6, 6])
   h.fill(v_x, v_y)
   data_array = []
   (0..(h.nx-1)).each do |x|
     (0..(h.ny-1)).each do |y|
-      #if ARGV[0] == "gnuplot"
-        #puts "#{x} #{y} #{h[x,y]}"
-        #h.fprintf($stdout, range_format = "%e", bin_format = "%e")
-      #end
-      data_array << [(h.xrange[x]+h.xrange[x+1])/2.0, (h.yrange[y]+h.yrange[y+1])/2.0, h[x,y]]
+      data_array << [(h.xrange[x]+h.xrange[x+1])/2.0, (h.yrange[y]+h.yrange[y+1])/2.0, h[x,y].to_f, (h.xrange[x]-h.xrange[x+1]).abs*(h.yrange[y]-h.yrange[y+1]).abs]
+      #p [(h.xrange[x]+h.xrange[x+1])/2.0, (h.yrange[y]+h.yrange[y+1])/2.0, h[x,y].to_f, (h.xrange[x]-h.xrange[x+1]).abs*(h.yrange[y]-h.yrange[y+1]).abs]
     end
   end
   data_array
 end
 
-#data_array = bivariate_gaussian(1200, 1.0, 1.0, 1.0, 1.0, 0, 1)
+#data_array = bivariate_gaussian(24000, 1.0, 1.0, 1.0, 1.0, 0, 1)
+
 data_array = bivariate_gaussian(24000, 1, 1, 1, 1, 0, 1)
 data_array += bivariate_gaussian(12000, -1, -2, 1, 1, 0, 1)
+
+#data_array = bivariate_gaussian(2400, 1, 1, 1, 1, 0, 1)
+#data_array += bivariate_gaussian(1200, -1, -2, 1, 1, 0, 1)
+
 #data_array = bivariate_gaussian(6000, 1, 1, 1, 1, 0, 1)
 #data_array += bivariate_gaussian(3000, -1, -2, 1, 1, 0, 1)
 if ARGV[0] == "without_weight"
   puts data_array.to_yaml
   exit(0)
 end
-sum = data_array.inject(0.0) do |sum, datum|
-  sum + datum[2]
-end
-#max = data_array.max {|a,b| a[2] <=> b[2]}
 data_array = data_array.map do |datum|
-  [datum[0], datum[1], datum[2] / sum]
-  #[datum[0], datum[1], datum[2] * 60.0 / max[2]]
+  if rand > 1.0
+    [datum[0], datum[1], 0.0, 0.0]
+  else
+    [datum[0], datum[1], datum[2], datum[3]]
+  end
 end
 if ARGV[0] == "gnuplot"
-  #exit(0)
   data_array.each do |datum|
     next if datum[2] == 0.0
     puts "#{datum[0]} #{datum[1]} #{datum[2]}"

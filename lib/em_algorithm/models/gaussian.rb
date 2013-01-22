@@ -37,11 +37,11 @@ module EMAlgorithm
     end
 
     def to_gnuplot
-      "exp(-((x-(#{round(@mu,6)}))**2.0)/(2.0*#{round(@sigma ** 2,6)}))/(sqrt(2.0*pi)*#{round(@sigma,6)})"
+      "exp(-((x-(#{@mu.round(DIGIT)}))**2.0)/(2.0*#{(@sigma ** 2).round(DIGIT)}))/(sqrt(2.0*pi)*#{@sigma.round(DIGIT)})"
     end
 
     def to_gnuplot_with_title(weight)
-      to_gnuplot + " w l axis x1y2 lw 3 title '#{round(weight,6)}*N(#{round(@mu,6)},#{round(@sigma,6)})'"
+      to_gnuplot + " w l axis x1y2 lw 3 title '#{weight.round(DIGIT)}*N(#{@mu.round(DIGIT)},#{@sigma.round(DIGIT)})'"
     end
   end
 end

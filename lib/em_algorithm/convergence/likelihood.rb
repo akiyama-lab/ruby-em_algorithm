@@ -5,16 +5,15 @@ module EMAlgorithm
 
     attr_accessor :history
 
-    def initialize(data_array, model)
+    def initialize(data_array)
       @data_array = data_array
-      @model = model
       @history = []
     end
 
     # calculate log likelihood
-    def calculate
+    def calculate(model)
       likelihood = @data_array.inject(0.0) do |likelihood, x|
-        likelihood + log(@model.pdf(x))
+        likelihood + log(model.pdf(x))
       end
       @history << likelihood
       likelihood
@@ -30,7 +29,7 @@ module EMAlgorithm
     end
 
     def debug_output
-      $stderr.puts "Likelihood: #{value}"
+      "Likelihood: #{value}"
     end
   end
 end

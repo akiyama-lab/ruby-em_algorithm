@@ -5,16 +5,20 @@ module EMAlgorithm
 
     attr_accessor :history
 
-    def initialize(data_array, model)
+    def initialize(data_array)
       @data_array = data_array
-      @model = model
       @history = []
     end
 
     # calculate chi square
-    def calculate
-      chi_square = @data_array.inject(0.0) do |chi_square, x|
-        chi_square + @model.chi_square(x)
+    def calculate(model, const)
+      chi_square = 0.0
+      @data_array.each do |x|
+        value = x[x.size-1]
+        pdf = model.pdf(x[0..(x.size-2)])
+        next if value <= 1.0
+        estimated = const * pdf
+        chi_square += (value - estimated)**2 / estimated
       end
       @history << chi_square
       chi_square

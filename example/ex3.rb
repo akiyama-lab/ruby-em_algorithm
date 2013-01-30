@@ -27,8 +27,12 @@ data_array = YAML.load_file(ARGV[0]).map {|v| GSL::Vector[v]}
 #  :models => [MdGaussian.new(Vector[-3.0, -4.0], Matrix[[9.0, 0.0], [0.0, 9.0]]), MdGaussian.new(Vector[2.0, 2.0], Matrix[[9.0, 0.0], [0.0, 9.0]])],
 #  :weights => [0.5, 0.5]
 #)
+# model = Mixture.new(
+#   :models => [MdGaussian.new(Vector[-5.0, -5.0], Matrix[[9.0, 0.0], [0.0, 9.0]]), MdGaussian.new(Vector[5.0, 5.0], Matrix[[9.0, 0.0], [0.0, 9.0]])],
+#   :weights => [0.5, 0.5]
+# )
 model = Mixture.new(
-  :models => [MdGaussian.new(Vector[-5.0, -5.0], Matrix[[9.0, 0.0], [0.0, 9.0]]), MdGaussian.new(Vector[5.0, 5.0], Matrix[[9.0, 0.0], [0.0, 9.0]])],
+  :models => [MdGaussian.new(Vector[-0.9567441860465107, -1.8509302325581392], Matrix[[3.4144651162790747, 1.764395348837209], [1.764395348837209, 6.793999999999991]]), MdGaussian.new(Vector[1.2384615384615372, 1.1925641025641025], Matrix[[4.114512820512822, 1.095717948717949], [1.095717948717949, 3.558512820512825]])],
   :weights => [0.5, 0.5]
 )
 

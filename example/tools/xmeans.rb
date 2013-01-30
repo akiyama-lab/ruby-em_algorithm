@@ -6,6 +6,9 @@ require 'gsl'
 
 include GSL
 
+size = ARGV[1] || 0
+size = size.to_i
+
 r = RSRuby.instance
 c = r.eval_R(<<-RCOMMAND)
 a <- read.csv('#{ARGV[0]}.csv')
@@ -13,7 +16,7 @@ source('./xmeans.R')
 xmeans(a,2,20)
 RCOMMAND
 
-data_array = YAML.load_file("#{ARGV[0]}.txt").map {|v| Vector[v] }
+data_array = YAML.load_file("#{ARGV[0]}.txt").map {|v| Vector[v[0..(size-1)]] }
 cluster = Array.new(c["size"].size).map { {"mu_sum" => 0.0, "sigma_sum" => Matrix.alloc(data_array[0].size, data_array[0].size)} }
 c["cluster"].each_with_index do |num, di|
   cluster[num - 1]["mu_sum"] += data_array[di]
